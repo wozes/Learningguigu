@@ -1,0 +1,314 @@
+<!-- BaseModal.vue - 通用弹窗组件 -->
+<template>
+  <el-dialog
+    :model-value="visible"
+    :title="title"
+    :width="width"
+    :close-on-click-modal="closeOnClickModal"
+    :close-on-press-escape="closeOnPressEscape"
+    :show-close="showClose"
+    :before-close="handleBeforeClose"
+    :destroy-on-close="destroyOnClose"
+    :append-to-body="appendToBody"
+    :modal="modal"
+    :lock-scroll="lockScroll"
+    @close="handleClose"
+  >
+    <!-- 头部插槽 -->
+    <template v-if="$slots.header" #header>
+      <slot name="header"></slot>
+    </template>
+    
+    <!-- 主体内容 -->
+    <div class="modal-body" :style="bodyStyle">
+      <slot></slot>
+    </div>
+    
+    <!-- 底部按钮 -->
+    <template #footer>
+      <slot name="footer">
+        <div class="modal-footer">
+          <el-button v-if="showCancelButton" @click="handleCancel">
+            {{ cancelButtonText }}
+          </el-button>
+          <el-button
+            v-if="showConfirmButton"
+            type="primary"
+            :loading="confirmLoading"
+            @click="handleConfirm"
+          >
+            {{ confirmButtonText }}
+          </el-button>
+        </div>
+      </slot>
+    </template>
+  </el-dialog>
+</template>
+
+<script>
+export default {
+  name: 'BaseModal',
+  props: {
+    // 显示状态
+    visible: {
+      type: Boolean,
+      default: false
+    },
+    // 标题
+    title: {
+      type: String,
+      default: '提示'
+    },
+    // 宽度
+    width: {
+      type: String,
+      default: '50%'
+    },
+    // 主体样式
+    bodyStyle: {
+      type: Object,
+      default: () => ({})
+    },
+    // 是否显示取消按钮
+    showCancelButton: {
+      type: Boolean,
+      default: true
+    },
+    // 是否显示确认按钮
+    showConfirmButton: {
+      type: Boolean,
+      default: true
+    },
+    // 取消按钮文本
+    cancelButtonText: {
+      type: String,
+      default: '取消'
+    },
+    // 确认按钮文本
+    confirmButtonText: {
+      type: String,
+      default: '确定'
+    },
+    // 确认按钮加载状态
+    confirmLoading: {
+      type: Boolean,
+      default: false
+    },
+    // 点击遮罩关闭
+    closeOnClickModal: {
+      type: Boolean,
+      default: false
+    },
+    // 按ESC关闭
+    closeOnPressEscape: {
+      type: Boolean,
+      default: true
+    },
+    // 显示关闭按钮
+    showClose: {
+      type: Boolean,
+      default: true
+    },
+    // 关闭前回调
+    beforeClose: {
+      type: Function,
+      default: null
+    },
+    // 关闭时销毁
+    destroyOnClose: {
+      type: Boolean,
+      default: false
+    },
+    // 追加到body
+    appendToBody: {
+      type: Boolean,
+      default: false
+    },
+    // 显示遮罩
+    modal: {
+      type: Boolean,
+      default: true
+    },
+    // 锁定滚动
+    lockScroll: {
+      type: Boolean,
+      default: true
+    }
+  },
+  methods: {
+    // 处理关闭前操作
+    handleBeforeClose(done) {
+      if (this.beforeClose) {
+        this.beforeClose(done)
+      } else {
+        done()
+      }
+    },
+    
+    // 处理关闭
+    handleClose() {
+      this.$emit('update:visible', false)
+      this.$emit('close')
+    },
+    
+    // 处理取消
+    handleCancel() {
+      this.$emit('cancel')
+      this.handleClose()
+    },
+    
+    // 处理确认
+    handleConfirm() {
+      this.$emit('confirm')
+    }
+  }
+}
+</script>
+
+<style scoped>
+.modal-body {
+  min-height: 100px;
+}
+
+.modal-footer {
+  text-align: right;
+}
+
+.modal-footer .el-button + .el-button {
+  margin-left: 10px;
+}
+</style>
+
+<!-- ConfirmModal.vue - 确认弹窗 -->
+<template>
+  <BaseModal
+    :visible="visible"
+    :title="title"
+    width="400px"
+    :show-cancel-button="showCancelButton"
+    @update:visible="$emit('update:visible', $event)"
+    @confirm="handleConfirm"
+    @cancel="handleCancel"
+  >
+    <div class="confirm-content">
+      <el-icon v-if="type" class="confirm-icon" :class="`is-${type}`">
+        <Warning v-if="type === 'warning'" />
+        <CircleCheck v-else-if="type === 'success'" />
+        <CircleClose v-else-if="type === 'error'" />
+        <InfoFilled v-else />
+      </el-icon>
+      <div class="confirm-message">
+        {{ message }}
+      </div>
+    </div>
+  </BaseModal>
+</template>
+
+<script>
+import BaseModal from './BaseModal.vue'
+import { Warning, CircleCheck, CircleClose, InfoFilled } from '@element-plus/icons-vue'
+
+export default {
+  name: 'ConfirmModal',
+  components: {
+    BaseModal,
+    Warning,
+    CircleCheck,
+    CircleClose,
+    InfoFilled
+  },
+  props: {
+    visible: {
+      type: Boolean,
+      default: false
+    },
+    title: {
+      type: String,
+      default: '确认'
+    },
+    message: {
+      type: String,
+      required: true
+    },
+    type: {
+      type: String,
+      default: 'warning',
+      validator: value => ['success', 'warning', 'info', 'error'].includes(value)
+    },
+    showCancelButton: {
+      type: Boolean,
+      default: true
+    }
+  },
+  emits: ['update:visible', 'confirm', 'cancel'],
+  methods: {
+    handleConfirm() {
+      this.$emit('confirm')
+    },
+    
+    handleCancel() {
+      this.$emit('cancel')
+    }
+  }
+}
+</script>
+
+<style scoped>
+.confirm-content {
+  display: flex;
+  align-items: flex-start;
+  padding: 20px 0;
+}
+
+.confirm-icon {
+  font-size: 24px;
+  margin-right: 12px;
+  margin-top: 2px;
+}
+
+.confirm-icon.is-warning {
+  color: #e6a23c;
+}
+
+.confirm-icon.is-success {
+  color: #67c23a;
+}
+
+.confirm-icon.is-error {
+  color: #f56c6c;
+}
+
+.confirm-icon.is-info {
+  color: #409eff;
+}
+
+.confirm-message {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.5;
+}
+</style>
+
+<!-- 使用示例 -->
+<!--
+// 基础弹窗使用
+<BaseModal
+  v-model:visible="modalVisible"
+  title="编辑用户"
+  width="600px"
+  :confirm-loading="loading"
+  @confirm="handleSave"
+  @cancel="handleCancel"
+>
+  <UserForm ref="userForm" :data="userData" />
+</BaseModal>
+
+// 确认弹窗使用
+<ConfirmModal
+  v-model:visible="confirmVisible"
+  title="删除确认"
+  message="确定要删除这条记录吗？删除后无法恢复。"
+  type="warning"
+  @confirm="handleDelete"
+/>
+-->

@@ -1,0 +1,257 @@
+<!-- DataTable.vue - 通用数据表格组件 -->
+<template>
+  <div class="data-table">
+    <el-table
+      :data="tableData"
+      :loading="loading"
+      :height="height"
+      @selection-change="handleSelectionChange"
+      @sort-change="handleSortChange"
+    >
+      <!-- 选择列 -->
+      <el-table-column
+        v-if="showSelection"
+        type="selection"
+        width="50"
+      />
+      
+      <!-- 序号列 -->
+      <el-table-column
+        v-if="showIndex"
+        type="index"
+        label="序号"
+        width="60"
+      />
+      
+      <!-- 数据列 -->
+      <el-table-column
+        v-for="column in columns"
+        :key="column.prop"
+        :prop="column.prop"
+        :label="column.label"
+        :width="column.width"
+        :min-width="column.minWidth"
+        :sortable="column.sortable"
+        :formatter="column.formatter"
+        :show-overflow-tooltip="column.showOverflowTooltip !== false"
+      >
+        <template #default="{ row, column: col, $index }">
+          <!-- 自定义插槽 -->
+          <slot 
+            v-if="column.slot" 
+            :name="column.slot"
+            :row="row"
+            :column="col"
+            :index="$index"
+          />
+          
+          <!-- 操作按钮 -->
+          <div v-else-if="column.prop === 'actions'" class="table-actions">
+            <el-button
+              v-for="action in column.actions"
+              :key="action.name"
+              :type="action.type || 'text'"
+              :size="action.size || 'small'"
+              :disabled="action.disabled && action.disabled(row)"
+              @click="handleAction(action.name, row, $index)"
+            >
+              {{ action.label }}
+            </el-button>
+          </div>
+          
+          <!-- 状态显示 -->
+          <el-tag
+            v-else-if="column.type === 'status'"
+            :type="getStatusType(row[column.prop], column.statusMap)"
+          >
+            {{ getStatusText(row[column.prop], column.statusMap) }}
+          </el-tag>
+          
+          <!-- 默认显示 -->
+          <span v-else>{{ row[column.prop] }}</span>
+        </template>
+      </el-table-column>
+    </el-table>
+    
+    <!-- 分页 -->
+    <div v-if="showPagination" class="pagination-wrapper">
+      <el-pagination
+        :current-page="pagination.page"
+        :page-size="pagination.size"
+        :page-sizes="pageSizes"
+        :total="pagination.total"
+        :layout="paginationLayout"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
+      />
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'DataTable',
+  props: {
+    // 表格数据
+    tableData: {
+      type: Array,
+      default: () => []
+    },
+    // 列配置
+    columns: {
+      type: Array,
+      required: true
+    },
+    // 是否显示选择框
+    showSelection: {
+      type: Boolean,
+      default: false
+    },
+    // 是否显示序号
+    showIndex: {
+      type: Boolean,
+      default: false
+    },
+    // 加载状态
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    // 表格高度
+    height: {
+      type: [String, Number],
+      default: null
+    },
+    // 分页配置
+    pagination: {
+      type: Object,
+      default: () => ({
+        page: 1,
+        size: 10,
+        total: 0
+      })
+    },
+    // 是否显示分页
+    showPagination: {
+      type: Boolean,
+      default: true
+    },
+    // 分页大小选项
+    pageSizes: {
+      type: Array,
+      default: () => [10, 20, 50, 100]
+    },
+    // 分页布局
+    paginationLayout: {
+      type: String,
+      default: 'total, sizes, prev, pager, next, jumper'
+    }
+  },
+  methods: {
+    // 处理选择变化
+    handleSelectionChange(selection) {
+      this.$emit('selection-change', selection)
+    },
+    
+    // 处理排序变化
+    handleSortChange({ column, prop, order }) {
+      this.$emit('sort-change', { column, prop, order })
+    },
+    
+    // 处理操作按钮点击
+    handleAction(actionName, row, index) {
+      this.$emit('action', { action: actionName, row, index })
+    },
+    
+    // 处理分页大小变化
+    handleSizeChange(size) {
+      this.$emit('size-change', size)
+    },
+    
+    // 处理页码变化
+    handlePageChange(page) {
+      this.$emit('page-change', page)
+    },
+    
+    // 获取状态类型
+    getStatusType(value, statusMap) {
+      const status = statusMap.find(item => item.value === value)
+      return status ? status.type : 'info'
+    },
+    
+    // 获取状态文本
+    getStatusText(value, statusMap) {
+      const status = statusMap.find(item => item.value === value)
+      return status ? status.label : value
+    }
+  }
+}
+</script>
+
+<style scoped>
+.data-table {
+  width: 100%;
+}
+
+.table-actions .el-button {
+  margin-right: 8px;
+}
+
+.table-actions .el-button:last-child {
+  margin-right: 0;
+}
+
+.pagination-wrapper {
+  margin-top: 20px;
+  text-align: right;
+}
+</style>
+
+<!-- 使用示例 -->
+<!--
+<DataTable
+  :table-data="tableData"
+  :columns="columns"
+  :loading="loading"
+  :pagination="pagination"
+  :show-selection="true"
+  :show-index="true"
+  @selection-change="handleSelectionChange"
+  @action="handleTableAction"
+  @page-change="handlePageChange"
+  @size-change="handleSizeChange"
+>
+  <template #avatar="{ row }">
+    <el-avatar :src="row.avatar" />
+  </template>
+</DataTable>
+
+data() {
+  return {
+    columns: [
+      { prop: 'name', label: '姓名', width: 120 },
+      { prop: 'email', label: '邮箱', minWidth: 180 },
+      { prop: 'avatar', label: '头像', width: 80, slot: 'avatar' },
+      { 
+        prop: 'status', 
+        label: '状态', 
+        width: 100, 
+        type: 'status',
+        statusMap: [
+          { value: 1, label: '启用', type: 'success' },
+          { value: 0, label: '禁用', type: 'danger' }
+        ]
+      },
+      {
+        prop: 'actions',
+        label: '操作',
+        width: 180,
+        actions: [
+          { name: 'edit', label: '编辑', type: 'primary' },
+          { name: 'delete', label: '删除', type: 'danger' }
+        ]
+      }
+    ]
+  }
+}
+-->

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>如何保证批量请求失败，只弹出一个Toast</title>
+  </head>
+  <body>
+    <ol type="1">
+      <li>
+        设置全局标志位：定义一个全局变量isToastShown来表示是否弹出过Toast。
+        在请求失败的处理逻辑中，首先检查标记位。
+        如果未弹出toast，则进行弹出操作，并设置isToastShown为true;
+        如果弹出toast，则直接忽略后续的弹出操作
+      </li>
+      <li>
+        使用防抖或节流函数：防抖（debounce）或节流（throttle）函数可以限制某个函数在一定时间内的执行次数。
+        将弹出toast的操作封装在防抖或节流函数中，保证在短时间的多个请求失败时，不会频繁弹出toast
+      </li>
+      <li>
+        集中处理错误：将所有请求的错误集中处理，而不是在每个请求的catch块中直接弹出toast。
+      </li>
+    </ol>
+    <script>
+      /* 
+            使用全局标志位和集中处理错误
+        */
+      let isToastShown = false; //全局标志位
+      function makeRequests() {
+        //多个请求的promise
+        const requests = [fetchPost(), fetchComments()];
+        Promise.all(requests)
+          .then(() => {
+            // 所有请求成功的处理逻辑
+          })
+          .catch((errors) => {
+            if (!isToastShown) {
+              //检查标志位
+              notify(errors[0]); //弹出toast
+              isToastShown = true; //设置标志位为true
+            }
+          });
+      }
+
+      function fetchJson(url, input) {
+        return fetch(url, input).then((res) => {
+          if (res.ok) {
+            return res.json();
+          }
+          const err = new HttpError(res);
+          if (!isToastShown) {
+            //检查标志位
+            notify(err); //弹出toast
+            isToastShown = true; //设置标志位为true
+          }
+          throw err;
+        });
+      }
+    </script>
+  </body>
+</html>

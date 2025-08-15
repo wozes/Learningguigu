@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript 事件监听器深入学习</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #4a5568;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .section {
+            margin: 30px 0;
+            padding: 25px;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #667eea;
+        }
+        
+        h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        h3 {
+            color: #4a5568;
+            margin: 20px 0 15px 0;
+            font-size: 1.3rem;
+        }
+        
+        .code-block {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .demo-area {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 2px dashed #cbd5e0;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .input-demo {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            margin: 10px;
+            font-size: 16px;
+            width: 200px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input-demo:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .event-box {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            min-height: 100px;
+            transition: all 0.3s ease;
+        }
+        
+        .event-box:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .log-area {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 15px 0;
+        }
+        
+        .highlight {
+            background: #fef5e7;
+            padding: 15px;
+            border-left: 4px solid #ed8936;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        ul {
+            padding-left: 25px;
+            margin: 15px 0;
+        }
+        
+        li {
+            margin: 8px 0;
+        }
+        
+        .interactive-demo {
+            border: 2px solid #667eea;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JavaScript 事件监听器深入学习</h1>
+        
+        <div class="section">
+            <h2>1. 事件监听器基础概念</h2>
+            <p><strong>事件监听器</strong>是JavaScript中用于处理用户交互和浏览器事件的机制。它让你的网页能够"监听"并响应各种事件。</p>
+            
+            <h3>事件流的三个阶段：</h3>
+            <ul>
+                <li><strong>捕获阶段</strong>：事件从document向目标元素传播</li>
+                <li><strong>目标阶段</strong>：事件到达目标元素</li>
+                <li><strong>冒泡阶段</strong>：事件从目标元素向document传播</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>2. addEventListener 详细语法</h2>
+            <div class="code-block">
+element.addEventListener(event, function, options);
+
+// 参数说明：
+// event: 事件类型字符串（如 'click', 'keydown'）
+// function: 事件处理函数
+// options: 可选配置对象
+            </div>
+            
+            <h3>Options 配置参数：</h3>
+            <div class="code-block">
+element.addEventListener('click', handler, {
+    once: true,        // 只执行一次
+    passive: true,     // 不会调用preventDefault()
+    capture: true      // 在捕获阶段触发
+});
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>3. 常用事件类型详解</h2>
+            <div class="grid">
+                <div>
+                    <h3>鼠标事件</h3>
+                    <ul>
+                        <li><code>click</code> - 鼠标点击</li>
+                        <li><code>dblclick</code> - 双击</li>
+                        <li><code>mousedown/mouseup</code> - 按下/松开</li>
+                        <li><code>mouseover/mouseout</code> - 悬停进入/离开</li>
+                        <li><code>mouseenter/mouseleave</code> - 鼠标进入/离开</li>
+                        <li><code>mousemove</code> - 鼠标移动</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>键盘事件</h3>
+                    <ul>
+                        <li><code>keydown</code> - 按键按下</li>
+                        <li><code>keyup</code> - 按键松开</li>
+                        <li><code>keypress</code> - 按键按下（已废弃）</li>
+                    </ul>
+                    
+                    <h3>表单事件</h3>
+                    <ul>
+                        <li><code>input</code> - 输入值改变</li>
+                        <li><code>change</code> - 值改变并失去焦点</li>
+                        <li><code>focus/blur</code> - 获得/失去焦点</li>
+                        <li><code>submit</code> - 表单提交</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section interactive-demo">
+            <h2>4. 交互式演示 - 基础事件</h2>
+            <div class="demo-area">
+                <button class="btn" id="clickBtn">点击我</button>
+                <button class="btn" id="dblClickBtn">双击我</button>
+                <input type="text" class="input-demo" id="textInput" placeholder="在这里输入...">
+                <div class="event-box" id="hoverBox">鼠标悬停在这里</div>
+                <div class="log-area" id="eventLog">事件日志将显示在这里...</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>5. 事件对象 (Event Object)</h2>
+            <p>每个事件处理函数都会接收一个事件对象作为参数，包含事件的详细信息：</p>
+            
+            <div class="code-block">
+element.addEventListener('click', function(event) {
+    console.log('事件类型:', event.type);
+    console.log('目标元素:', event.target);
+    console.log('当前元素:', event.currentTarget);
+    console.log('鼠标坐标:', event.clientX, event.clientY);
+    
+    // 阻止默认行为
+    event.preventDefault();
+    
+    // 阻止事件冒泡
+    event.stopPropagation();
+});
+            </div>
+            
+            <h3>常用事件对象属性：</h3>
+            <ul>
+                <li><code>event.type</code> - 事件类型</li>
+                <li><code>event.target</code> - 触发事件的元素</li>
+                <li><code>event.currentTarget</code> - 绑定事件的元素</li>
+                <li><code>event.clientX/clientY</code> - 鼠标相对于视口的坐标</li>
+                <li><code>event.key</code> - 按下的键（键盘事件）</li>
+                <li><code>event.preventDefault()</code> - 阻止默认行为</li>
+                <li><code>event.stopPropagation()</code> - 阻止事件冒泡</li>
+            </ul>
+        </div>
+        
+        <div class="section interactive-demo">
+            <h2>6. 交互式演示 - 事件对象</h2>
+            <div class="demo-area">
+                <div class="event-box" id="eventInfoBox">点击这里查看事件信息</div>
+                <div class="log-area" id="eventInfoLog">事件信息将显示在这里...</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>7. 事件冒泡与捕获</h2>
+            <div class="highlight">
+                <strong>冒泡</strong>：事件从内层元素向外层元素传播（默认行为）<br>
+                <strong>捕获</strong>：事件从外层元素向内层元素传播
+            </div>
+            
+            <div class="code-block">
+// 冒泡阶段监听（默认）
+parent.addEventListener('click', handler);
+
+// 捕获阶段监听
+parent.addEventListener('click', handler, true);
+// 或者
+parent.addEventListener('click', handler, { capture: true });
+            </div>
+        </div>
+        
+        <div class="section interactive-demo">
+            <h2>8. 交互式演示 - 事件冒泡</h2>
+            <div class="demo-area">
+                <div id="outerBox" style="background: #e2e8f0; padding: 30px; border-radius: 10px; cursor: pointer;">
+                    外层盒子
+                    <div id="middleBox" style="background: #cbd5e0; padding: 20px; margin: 10px; border-radius: 8px;">
+                        中层盒子
+                        <div id="innerBox" style="background: #a0aec0; padding: 10px; margin: 10px; border-radius: 6px;">
+                            内层盒子 - 点击我
+                        </div>
+                    </div>
+                </div>
+                <button class="btn" id="toggleCapture">切换到捕获模式</button>
+                <div class="log-area" id="bubbleLog">点击内层盒子观察事件冒泡...</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>9. 移除事件监听器</h2>
+            <div class="code-block">
+// 定义函数
+function handleClick() {
+    console.log('按钮被点击');
+}
+
+// 添加监听器
+button.addEventListener('click', handleClick);
+
+// 移除监听器（必须是同一个函数引用）
+button.removeEventListener('click', handleClick);
+            </div>
+            
+            <div class="highlight">
+                <strong>注意：</strong>移除事件监听器时，必须传入完全相同的函数引用。匿名函数无法被移除。
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>10. 事件委托 (Event Delegation)</h2>
+            <p>事件委托是一种高效的事件处理模式，利用事件冒泡机制，在父元素上监听子元素的事件。</p>
+            
+            <div class="code-block">
+// 传统方式 - 给每个按钮添加监听器
+const buttons = document.querySelectorAll('.btn');
+buttons.forEach(btn => {
+    btn.addEventListener('click', handleClick);
+});
+
+// 事件委托 - 只在父元素添加一个监听器
+const container = document.querySelector('.container');
+container.addEventListener('click', function(e) {
+    if (e.target.classList.contains('btn')) {
+        handleClick(e);
+    }
+});
+            </div>
+            
+            <h3>事件委托的优势：</h3>
+            <ul>
+                <li>减少内存使用 - 只需要一个监听器</li>
+                <li>动态元素自动获得事件处理</li>
+                <li>更好的性能，特别是大量元素时</li>
+            </ul>
+        </div>
+        
+        <div class="section interactive-demo">
+            <h2>11. 交互式演示 - 事件委托</h2>
+            <div class="demo-area">
+                <div id="delegationContainer">
+                    <button class="btn delegate-btn">按钮 1</button>
+                    <button class="btn delegate-btn">按钮 2</button>
+                    <button class="btn delegate-btn">按钮 3</button>
+                </div>
+                <button class="btn" id="addBtn">动态添加按钮</button>
+                <div class="log-area" id="delegationLog">点击任意按钮观察事件委托...</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>12. 实际应用场景</h2>
+            <div class="grid">
+                <div>
+                    <h3>表单验证</h3>
+                    <div class="code-block">
+const email = document.querySelector('#email');
+email.addEventListener('blur', function() {
+    const isValid = validateEmail(this.value);
+    if (!isValid) {
+        this.classList.add('error');
+        showError('请输入有效邮箱');
+    }
+});
+                    </div>
+                </div>
+                <div>
+                    <h3>图片懒加载</h3>
+                    <div class="code-block">
+window.addEventListener('scroll', function() {
+    const images = document.querySelectorAll('img[data-src]');
+    images.forEach(img => {
+        if (isInViewport(img)) {
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+        }
+    });
+});
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>13. 性能优化技巧</h2>
+            <h3>防抖 (Debouncing)</h3>
+            <div class="code-block">
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+// 使用防抖优化搜索输入
+const searchInput = document.querySelector('#search');
+const debouncedSearch = debounce(performSearch, 300);
+searchInput.addEventListener('input', debouncedSearch);
+            </div>
+            
+            <h3>节流 (Throttling)</h3>
+            <div class="code-block">
+function throttle(func, limit) {
+    let inThrottle;
+    return function(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
+// 使用节流优化滚动事件
+const throttledScroll = throttle(handleScroll, 100);
+window.addEventListener('scroll', throttledScroll);
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>14. 最佳实践</h2>
+            <ul>
+                <li><strong>使用 addEventListener</strong> 而不是 onclick 属性</li>
+                <li><strong>及时移除不需要的监听器</strong> 避免内存泄漏</li>
+                <li><strong>使用事件委托</strong> 处理大量同类元素</li>
+                <li><strong>合理使用防抖和节流</strong> 优化性能</li>
+                <li><strong>避免在循环中创建监听器</strong></li>
+                <li><strong>使用具名函数</strong> 便于调试和移除</li>
+                <li><strong>考虑passive选项</strong> 提升滚动性能</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 基础事件演示
+        const clickBtn = document.getElementById('clickBtn');
+        const dblClickBtn = document.getElementById('dblClickBtn');
+        const textInput = document.getElementById('textInput');
+        const hoverBox = document.getElementById('hoverBox');
+        const eventLog = document.getElementById('eventLog');
+
+        function logEvent(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            eventLog.innerHTML += `[${timestamp}] ${message}<br>`;
+            eventLog.scrollTop = eventLog.scrollHeight;
+        }
+
+        clickBtn.addEventListener('click', () => {
+            logEvent('单击按钮被触发！');
+        });
+
+        dblClickBtn.addEventListener('dblclick', () => {
+            logEvent('双击按钮被触发！');
+        });
+
+        textInput.addEventListener('input', (e) => {
+            logEvent(`输入内容: "${e.target.value}"`);
+        });
+
+        hoverBox.addEventListener('mouseenter', () => {
+            logEvent('鼠标进入悬停区域');
+            hoverBox.style.background = '#667eea';
+            hoverBox.style.color = 'white';
+        });
+
+        hoverBox.addEventListener('mouseleave', () => {
+            logEvent('鼠标离开悬停区域');
+            hoverBox.style.background = 'white';
+            hoverBox.style.color = '#333';
+        });
+
+        // 事件对象演示
+        const eventInfoBox = document.getElementById('eventInfoBox');
+        const eventInfoLog = document.getElementById('eventInfoLog');
+
+        eventInfoBox.addEventListener('click', (e) => {
+            const info = `
+事件类型: ${e.type}
+目标元素: ${e.target.tagName}
+鼠标坐标: (${e.clientX}, ${e.clientY})
+时间戳: ${e.timeStamp}
+是否冒泡: ${e.bubbles}
+是否可取消: ${e.cancelable}
+            `;
+            eventInfoLog.innerHTML = info.replace(/\n/g, '<br>');
+        });
+
+        // 事件冒泡演示
+        const outerBox = document.getElementById('outerBox');
+        const middleBox = document.getElementById('middleBox');
+        const innerBox = document.getElementById('innerBox');
+        const toggleCapture = document.getElementById('toggleCapture');
+        const bubbleLog = document.getElementById('bubbleLog');
+        
+        let isCapture = false;
+        
+        function setupBubbleDemo() {
+            // 清除之前的监听器
+            outerBox.removeEventListener('click', outerHandler, true);
+            outerBox.removeEventListener('click', outerHandler, false);
+            middleBox.removeEventListener('click', middleHandler, true);
+            middleBox.removeEventListener('click', middleHandler, false);
+            innerBox.removeEventListener('click', innerHandler, true);
+            innerBox.removeEventListener('click', innerHandler, false);
+            
+            // 添加新的监听器
+            outerBox.addEventListener('click', outerHandler, isCapture);
+            middleBox.addEventListener('click', middleHandler, isCapture);
+            innerBox.addEventListener('click', innerHandler, isCapture);
+        }
+        
+        function outerHandler(e) {
+            bubbleLog.innerHTML += `外层盒子被触发 (${isCapture ? '捕获' : '冒泡'}阶段)<br>`;
+            bubbleLog.scrollTop = bubbleLog.scrollHeight;
+        }
+        
+        function middleHandler(e) {
+            bubbleLog.innerHTML += `中层盒子被触发 (${isCapture ? '捕获' : '冒泡'}阶段)<br>`;
+            bubbleLog.scrollTop = bubbleLog.scrollHeight;
+        }
+        
+        function innerHandler(e) {
+            bubbleLog.innerHTML += `内层盒子被触发 (目标阶段)<br>`;
+            bubbleLog.scrollTop = bubbleLog.scrollHeight;
+        }
+        
+        toggleCapture.addEventListener('click', () => {
+            isCapture = !isCapture;
+            toggleCapture.textContent = isCapture ? '切换到冒泡模式' : '切换到捕获模式';
+            bubbleLog.innerHTML = `当前模式: ${isCapture ? '捕获' : '冒泡'}阶段监听<br>`;
+            setupBubbleDemo();
+        });
+        
+        // 初始化冒泡演示
+        setupBubbleDemo();
+
+        // 事件委托演示
+        const delegationContainer = document.getElementById('delegationContainer');
+        const addBtn = document.getElementById('addBtn');
+        const delegationLog = document.getElementById('delegationLog');
+        let buttonCount = 3;
+
+        // 使用事件委托
+        delegationContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delegate-btn')) {
+                delegationLog.innerHTML += `${e.target.textContent} 被点击了！<br>`;
+                delegationLog.scrollTop = delegationLog.scrollHeight;
+            }
+        });
+
+        addBtn.addEventListener('click', () => {
+            buttonCount++;
+            const newBtn = document.createElement('button');
+            newBtn.className = 'btn delegate-btn';
+            newBtn.textContent = `按钮 ${buttonCount}`;
+            delegationContainer.appendChild(newBtn);
+            delegationLog.innerHTML += `动态添加了 ${newBtn.textContent}（自动具有点击功能）<br>`;
+            delegationLog.scrollTop = delegationLog.scrollHeight;
+        });
+
+        // 清空日志功能
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.log-area').forEach(log => {
+                    log.innerHTML = '日志已清空...';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
